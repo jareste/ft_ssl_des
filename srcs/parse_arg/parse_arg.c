@@ -27,6 +27,7 @@ static const algorithm_entry g_algorithms[] = {
     { "sha256", SHA256 },
     { "whirlpool", WHIRLPOOL },
     { "blake2s", BLAKE2S },
+    { "base64", BASE64 },
     { "help", HELP },
     { "--help", HELP },
     { "-h", HELP },
@@ -124,6 +125,29 @@ error:
     return NONE;
 }
 
+void check_flag(algorithms algo, int flag, char flag_name)
+{
+    switch (algo)
+    {
+        case MD5:
+        case SHA256:
+        case WHIRLPOOL:
+        case BLAKE2S:
+            if (flag & DIGEST_FLAGS)
+                return;
+            break;
+        case BASE64:
+            if (flag & CIPHER_FLAGS)
+                return;
+            break;
+        default:
+            print_usage(NONE, EXIT_FAILURE);
+            break;
+    }
+    fprintf(stderr, "ft_ssl: Error: Invalid flag combination %c with algo %s.\n", flag_name, get_algo_name(algo));
+    print_usage(NONE, EXIT_FAILURE);
+}
+
 void parse_args(int argc, char *argv[], int *flags, void** encrypt, algorithms* algorithm)
 {
     int opt;
@@ -141,15 +165,19 @@ void parse_args(int argc, char *argv[], int *flags, void** encrypt, algorithms* 
                 print_usage(*algorithm, EXIT_SUCCESS);
                 exit(0);
             case 'p':
+                check_flag(*algorithm, P_FLAG, 'p');
                 *flags |= P_FLAG;
                 break;
             case 'q':
+                check_flag(*algorithm, Q_FLAG, 'q');
                 *flags |= Q_FLAG;
                 break;
             case 'r':
+                check_flag(*algorithm, R_FLAG, 'r');
                 *flags |= R_FLAG;
                 break;
             case 's':
+                check_flag(*algorithm, S_FLAG, 's');
                 if (optarg)
                 {
                     list_add_last(list, optarg, optarg, TYPE_NORMAL);

@@ -4,8 +4,19 @@
 #define UNUSED_PARAM(x) (void)(x)
 #define P_FLAG 0x0001
 #define Q_FLAG 0x0002
-#define S_FLAG 0x0008
 #define R_FLAG 0x0004
+#define S_FLAG 0x0008
+#define A_FLAG 0x0010
+#define D_FLAG 0x0020
+#define E_FLAG 0x0040
+#define I_FLAG 0x0080
+#define K_FLAG 0x0100
+#define O_FLAG 0x0200
+#define S_FLAG 0x0400
+#define V_FLAG 0x0800
+
+#define DIGEST_FLAGS (P_FLAG | Q_FLAG | R_FLAG | S_FLAG)
+#define CIPHER_FLAGS (P_FLAG | A_FLAG | D_FLAG | E_FLAG | I_FLAG | K_FLAG | O_FLAG | S_FLAG | V_FLAG)
 
 typedef enum {
     TYPE_STDIN,
@@ -19,6 +30,7 @@ typedef enum {
     SHA256,
     WHIRLPOOL,
     BLAKE2S,
+    BASE64,
     HELP,
     NONE
 } algorithms;
