@@ -17,16 +17,24 @@
 /*        DEFINES          */
 /***************************/
 
-static const char *g_algorithms[] = {
-    "md5",
-    "sha256",
-    "whirlpool",
-    "blake2s",
-    "help",
-    "--help",
-    "-h",
-    NULL
+typedef struct {
+    const char *name;
+    algorithms alg;
+} algorithm_entry;
+
+static const algorithm_entry g_algorithms[] = {
+    { "md5", MD5 },
+    { "sha256", SHA256 },
+    { "whirlpool", WHIRLPOOL },
+    { "blake2s", BLAKE2S },
+    { "help", HELP },
+    { "--help", HELP },
+    { "-h", HELP },
+    { NULL, NONE }
 };
+
+#define get_algo_name(x) g_algorithms[x].name
+#define get_algo_alg(x) g_algorithms[x].alg
 
 /***************************/
 /*        METHODS          */
@@ -98,24 +106,15 @@ static void read_stdin(char **encrypt)
     *encrypt = buffer;
 }
 
-static algorithms check_algorithm(char *algorithm)
+static algorithms check_algorithm(const char *algorithm)
 {
     if (algorithm == NULL) goto error;
 
-    for (int i = 0; g_algorithms[i]; i++)
+    for (int i = 0; get_algo_name(i) != NULL; i++)
     {
-        if (strcasecmp(algorithm, g_algorithms[i]) == 0)
+        if (strcasecmp(algorithm, g_algorithms[i].name) == 0)
         {
-            if (i == 0)
-                return MD5;
-            else if (i == 1)
-                return SHA256;
-            else if (i == 2)
-                return WHIRLPOOL;
-            else if (i == 3)
-                return BLAKE2S;
-            else if (i == 4 || i == 5 || i == 6)
-                return HELP;
+            return get_algo_alg(i);
         }
     }
 
