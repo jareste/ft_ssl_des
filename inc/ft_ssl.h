@@ -12,11 +12,11 @@
 #define I_FLAG 0x0080
 #define K_FLAG 0x0100
 #define O_FLAG 0x0200
-#define S_FLAG 0x0400
-#define V_FLAG 0x0800
+#define V_FLAG 0x0400
 
 #define DIGEST_FLAGS (P_FLAG | Q_FLAG | R_FLAG | S_FLAG)
 #define CIPHER_FLAGS (P_FLAG | A_FLAG | D_FLAG | E_FLAG | I_FLAG | K_FLAG | O_FLAG | S_FLAG | V_FLAG)
+#define BASE64_FLAGS (D_FLAG | E_FLAG | I_FLAG | O_FLAG)
 
 typedef enum {
     TYPE_STDIN,
@@ -26,11 +26,24 @@ typedef enum {
 } input_type;
 
 typedef enum {
+    false,
+    true
+} bool;
+
+typedef enum {
     MD5,
     SHA256,
     WHIRLPOOL,
     BLAKE2S,
     BASE64,
+    DES,
+    DES_ECB,
+    DES_CBC,
+    DES_OFB,
+    DES3,
+    DES3_ECB,
+    DES3_CBC,
+    DES3_OFB,
     HELP,
     NONE
 } algorithms;

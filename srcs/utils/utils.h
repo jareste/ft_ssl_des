@@ -1,6 +1,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <ft_ssl.h>
+
 void exec_algorithm(void *encrypt, int flags, algorithms algorithm);
 void print_without_newline(const char *str);
 void usage(int code);

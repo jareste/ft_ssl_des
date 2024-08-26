@@ -7,6 +7,7 @@
 #include <utils.h>
 #include <whirlpool.h>
 #include <blake2s.h>
+#include <base64.h>
 
 #include <stdio.h>
 
@@ -32,6 +33,9 @@ void exec_algorithm(void *encrypt, int flags, algorithms algorithm)
             break;
         case BLAKE2S:
             blake2s_main(get_data(list), get_procedence(list), get_type(list), flags);
+            break;
+        case BASE64:
+            base64_main(get_data(list), get_procedence(list), get_type(list), flags);
             break;
         default:
             ft_assert(0, "Fatal error: Unknown algorithm.");

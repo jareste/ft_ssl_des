@@ -28,6 +28,14 @@ static const algorithm_entry g_algorithms[] = {
     { "whirlpool", WHIRLPOOL },
     { "blake2s", BLAKE2S },
     { "base64", BASE64 },
+    { "des", DES },
+    { "des-ecb", DES_ECB },
+    { "des-cbc", DES_CBC },
+    { "des-ofb", DES_OFB },
+    { "des3", DES3 },
+    { "des3-ecb", DES3_ECB },
+    { "des3-cbc", DES3_CBC },
+    { "des3-ofb", DES3_OFB },
     { "help", HELP },
     { "--help", HELP },
     { "-h", HELP },
@@ -125,6 +133,20 @@ error:
     return NONE;
 }
 
+static bool can_read_file(algorithms algo)
+{
+    switch (algo)
+    {
+        case MD5:
+        case SHA256:
+        case WHIRLPOOL:
+        case BLAKE2S:
+            return true;
+        default:
+            return false;
+    }
+}
+
 void check_flag(algorithms algo, int flag, char flag_name)
 {
     switch (algo)
@@ -137,6 +159,17 @@ void check_flag(algorithms algo, int flag, char flag_name)
                 return;
             break;
         case BASE64:
+            if (flag & CIPHER_FLAGS)
+                    return;
+                break;
+        case DES:
+        case DES_ECB:
+        case DES_CBC:
+        case DES_OFB:
+        case DES3:
+        case DES3_ECB:
+        case DES3_CBC:
+        case DES3_OFB:
             if (flag & CIPHER_FLAGS)
                 return;
             break;
@@ -156,7 +189,7 @@ void parse_args(int argc, char *argv[], int *flags, void** encrypt, algorithms* 
 
     *algorithm = check_algorithm(argv[1]);
 
-    while ((opt = getopt(argc, argv, "?hpqrs:")) != -1)
+    while ((opt = getopt(argc, argv, "?hpqrs:edi:o:")) != -1)
     {
         switch (opt)
         {
@@ -188,6 +221,54 @@ void parse_args(int argc, char *argv[], int *flags, void** encrypt, algorithms* 
                     fprintf(stderr, "This will become fatal error in the future.\n");
                 }
                 break;
+            case 'e':
+                check_flag(*algorithm, E_FLAG, 'e');
+                if (*flags & D_FLAG)
+                {
+                    fprintf(stderr, "ft_ssl: Error: Cannot use -d and -e together.\n");
+                    print_usage(*algorithm, EXIT_FAILURE);
+                    exit(1);
+                }
+                *flags |= E_FLAG;
+                break;
+            case 'd':
+                check_flag(*algorithm, D_FLAG, 'd');
+                if (*flags & E_FLAG)
+                {
+                    fprintf(stderr, "ft_ssl: Error: Cannot use -d and -e together.\n");
+                    print_usage(*algorithm, EXIT_FAILURE);
+                    exit(1);
+                }
+                *flags |= D_FLAG;
+                break;
+            case 'i':
+                check_flag(*algorithm, I_FLAG, 'i');
+                if (optarg)
+                {
+                    read_file(optarg, &stdin_buffer);
+                    list_add_last(list, stdin_buffer, optarg, TYPE_FILE);
+                    free(stdin_buffer);
+                    stdin_buffer = NULL;
+                }
+                else
+                {
+                    fprintf(stderr, "Option -i contains garbage as argument: %s.\n", optarg);
+                    fprintf(stderr, "This will become fatal error in the future.\n");
+                }
+                break;
+            case 'o':
+            /*notok*/
+                check_flag(*algorithm, O_FLAG, 'o');
+                if (optarg)
+                {
+                    list_add_last(list, optarg, optarg, TYPE_NORMAL);
+                }
+                else
+                {
+                    fprintf(stderr, "Option -o contains garbage as argument: %s.\n", optarg);
+                    fprintf(stderr, "This will become fatal error in the future.\n");
+                }
+                break;
             default:
                 print_usage(*algorithm, EXIT_FAILURE);
                 exit(1);
@@ -197,6 +278,13 @@ void parse_args(int argc, char *argv[], int *flags, void** encrypt, algorithms* 
     stdin_buffer = NULL;
     for (int i = optind+1; i < argc; i++)
     {
+        if (!can_read_file(*algorithm))
+        {
+            fprintf(stderr, "ft_ssl: Error: %s does not accept files as input.\n", get_algo_name(*algorithm));
+            print_usage(*algorithm, EXIT_FAILURE);
+            exit(1);
+        }
+
         read_file(argv[i], &stdin_buffer);
         if (stdin_buffer)
         {
