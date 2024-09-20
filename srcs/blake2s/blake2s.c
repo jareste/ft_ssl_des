@@ -160,13 +160,13 @@ static void blake2s_final(blake2s_ctx *ctx, void *out)
     }
 }
 
-void blake2s_main(char *encrypt, char* procedence, input_type type, int flags)
+void blake2s_main(char *encrypt, char* procedence, input_type type, int flags, size_t size)
 {
     blake2s_ctx ctx;
     uint8_t hash[BLAKE2S_OUT_SIZE];
 
     blake2s_init(&ctx, BLAKE2S_OUT_SIZE);
-    blake2s_update(&ctx, encrypt, strlen(encrypt));
+    blake2s_update(&ctx, encrypt, size);
     blake2s_final(&ctx, hash);
 
 
@@ -190,6 +190,8 @@ void blake2s_main(char *encrypt, char* procedence, input_type type, int flags)
                 break;
             case TYPE_STDIN_NORMAL:
                 /* handled outside */
+                break;
+            default:
                 break;
         }
     }
@@ -229,6 +231,8 @@ void blake2s_main(char *encrypt, char* procedence, input_type type, int flags)
                 break;
             case TYPE_STDIN_NORMAL:
                 /* handled outside */
+                break;
+            default:
                 break;
         }
     }

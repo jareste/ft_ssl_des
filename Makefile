@@ -9,7 +9,7 @@ RELEASE_CFLAGS = $(CFLAGS) -DNDEBUG
 #########
 
 #########
-FILES = main md5 ft_malloc parse_arg sha256 ft_list utils whirlpool blake2s base64
+FILES = main md5 ft_malloc parse_arg sha256 ft_list utils whirlpool blake2s base64 ft_algorithm_g
 
 SRC = $(addsuffix .c, $(FILES))
 

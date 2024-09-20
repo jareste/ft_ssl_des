@@ -125,10 +125,10 @@ static void sha256(const uint8_t *initial_msg, size_t initial_len, uint8_t *dige
     free(msg);
 }
 
-void sha256_main(char* encrypt, char* procedence, input_type type, int flags)
+void sha256_main(char* encrypt, char* procedence, input_type type, int flags, size_t size)
 {
     uint8_t digest[32];
-    sha256((uint8_t*)encrypt, strlen(encrypt), digest);
+    sha256((uint8_t*)encrypt, size, digest);
 
     /**/
     if (!(flags & Q_FLAG) && !(flags & R_FLAG))
@@ -150,6 +150,8 @@ void sha256_main(char* encrypt, char* procedence, input_type type, int flags)
                 break;
             case TYPE_STDIN_NORMAL:
                 /* handled outside */
+                break;
+            default:
                 break;
         }
     }
@@ -187,6 +189,8 @@ void sha256_main(char* encrypt, char* procedence, input_type type, int flags)
                 break;
             case TYPE_STDIN_NORMAL:
                 /* handled outside */
+                break;
+            default:
                 break;
         }
     }

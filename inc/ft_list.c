@@ -8,7 +8,7 @@ list_t* list_get_next(list_t *node)
     return node->next;
 }
 
-void list_add_last(list_t **head, char *data, char *procedence, input_type type)
+void list_add_last(list_t **head, char *data, char *procedence, input_type type, size_t size)
 {
     if (data == NULL || procedence == NULL) return;
     
@@ -17,6 +17,7 @@ void list_add_last(list_t **head, char *data, char *procedence, input_type type)
     new_node->node.procedence = strdup(procedence);
     new_node->node.type = type;
     new_node->next = NULL;
+    new_node->node.size = size;
 
     if (*head == NULL)
     {
@@ -59,6 +60,11 @@ void list_remove_single(list_t **head, list_t *node_to_remove)
         free(temp->node.data);
         free(temp);
     }
+}
+
+size_t get_size(list_t *node)
+{
+    return node->node.size;
 }
 
 char* get_data(list_t *node)

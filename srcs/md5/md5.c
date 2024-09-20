@@ -125,10 +125,10 @@ static void md5(const uint8_t *initial_msg, size_t initial_len, uint8_t *digest)
     free(msg);
 }
 
-void md5_main(char *encrypt, char* procedence, input_type type, int flags)
+void md5_main(char *encrypt, char* procedence, input_type type, int flags, size_t size)
 {
     uint8_t digest[16];
-    md5((uint8_t*)encrypt, strlen(encrypt), digest);
+    md5((uint8_t*)encrypt, size, digest);
 
     /**/
     if (!(flags & Q_FLAG) && !(flags & R_FLAG))
@@ -150,6 +150,8 @@ void md5_main(char *encrypt, char* procedence, input_type type, int flags)
                 break;
             case TYPE_STDIN_NORMAL:
                 /* handled outside */
+                break;
+            default:
                 break;
         }
     }
@@ -189,6 +191,8 @@ void md5_main(char *encrypt, char* procedence, input_type type, int flags)
                 break;
             case TYPE_STDIN_NORMAL:
                 /* handled outside */
+                break;
+            default:
                 break;
         }
     }

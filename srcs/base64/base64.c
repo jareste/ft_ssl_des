@@ -77,12 +77,13 @@ static char* base64_encode(const char* input)
     return output;
 }
 
-void base64_main(char *encrypt, char* procedence, input_type type, int flags)
+void base64_main(char *encrypt, char* procedence, input_type type, int flags, size_t size)
 {
     char* output = NULL;
 
     UNUSED_PARAM(procedence);
     UNUSED_PARAM(type);
+    UNUSED_PARAM(size);
 
     if (flags & D_FLAG)
     {

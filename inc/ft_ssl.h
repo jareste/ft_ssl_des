@@ -1,6 +1,8 @@
 #ifndef FT_SSL_H
 #define FT_SSL_H
 
+#include <stddef.h>
+
 #define UNUSED_PARAM(x) (void)(x)
 #define P_FLAG 0x0001
 #define Q_FLAG 0x0002
@@ -17,12 +19,16 @@
 #define DIGEST_FLAGS (P_FLAG | Q_FLAG | R_FLAG | S_FLAG)
 #define CIPHER_FLAGS (P_FLAG | A_FLAG | D_FLAG | E_FLAG | I_FLAG | K_FLAG | O_FLAG | S_FLAG | V_FLAG)
 #define BASE64_FLAGS (D_FLAG | E_FLAG | I_FLAG | O_FLAG)
+#define DES_FLAGS    (P_FLAG | A_FLAG | D_FLAG | E_FLAG | I_FLAG | K_FLAG | O_FLAG | S_FLAG | V_FLAG)
 
 typedef enum {
     TYPE_STDIN,
     TYPE_STDIN_NORMAL,
     TYPE_FILE,
-    TYPE_NORMAL
+    TYPE_NORMAL,
+    TYPE_KEY,
+    TYPE_SALT,
+    TYPE_PASSWORD,
 } input_type;
 
 typedef enum {
@@ -31,7 +37,7 @@ typedef enum {
 } bool;
 
 typedef enum {
-    MD5,
+    MD5 = 0,
     SHA256,
     WHIRLPOOL,
     BLAKE2S,

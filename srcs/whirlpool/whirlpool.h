@@ -1,11 +1,12 @@
 #ifndef WHIRLPOOL_H
 #define WHIRLPOOL_H
 
+#include <ft_ssl.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #define WHIRLPOOL_DIGEST_LENGTH 64
 
-void whirlpool_main(const char *data, char* procedence, int type, int flags);
+void whirlpool_main(char *data, char* procedence, input_type type, int flags, size_t size);
 
 #endif

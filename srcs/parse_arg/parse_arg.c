@@ -12,44 +12,44 @@
 #include <ft_list.h>
 #include <errno.h>
 #include <utils.h>
+#include <ft_algorithm_g.h>
 
 /***************************/
 /*        DEFINES          */
 /***************************/
+// typedef void (*algorithm_func)(char *encrypt, char *procedence, input_type type, int flags);
 
-typedef struct {
-    const char *name;
-    algorithms alg;
-} algorithm_entry;
+// typedef struct {
+//     const char*     name;
+//     algorithms      alg;
+//     algorithm_func  func;
+// } algorithm_entry;
 
-static const algorithm_entry g_algorithms[] = {
-    { "md5", MD5 },
-    { "sha256", SHA256 },
-    { "whirlpool", WHIRLPOOL },
-    { "blake2s", BLAKE2S },
-    { "base64", BASE64 },
-    { "des", DES },
-    { "des-ecb", DES_ECB },
-    { "des-cbc", DES_CBC },
-    { "des-ofb", DES_OFB },
-    { "des3", DES3 },
-    { "des3-ecb", DES3_ECB },
-    { "des3-cbc", DES3_CBC },
-    { "des3-ofb", DES3_OFB },
-    { "help", HELP },
-    { "--help", HELP },
-    { "-h", HELP },
-    { NULL, NONE }
-};
-
-#define get_algo_name(x) g_algorithms[x].name
-#define get_algo_alg(x) g_algorithms[x].alg
+// static const algorithm_entry g_algorithms[] = {
+//     { "md5", MD5, md5_main },
+//     { "sha256", SHA256, sha256_main },
+//     { "whirlpool", WHIRLPOOL },
+//     { "blake2s", BLAKE2S },
+//     { "base64", BASE64 },
+//     { "des", DES },
+//     { "des-ecb", DES_ECB },
+//     { "des-cbc", DES_CBC },
+//     { "des-ofb", DES_OFB },
+//     { "des3", DES3 },
+//     { "des3-ecb", DES3_ECB },
+//     { "des3-cbc", DES3_CBC },
+//     { "des3-ofb", DES3_OFB },
+//     { "help", HELP },
+//     { "--help", HELP },
+//     { "-h", HELP },
+//     { NULL, NONE }
+// };
 
 /***************************/
 /*        METHODS          */
 /***************************/
 
-static void read_file(const char *filename, char **content)
+static void read_file(const char *filename, char **content, size_t *size)
 {
     if (access(filename, F_OK) != 0)
     {
@@ -87,12 +87,15 @@ static void read_file(const char *filename, char **content)
     }
 
     (*content)[file_size] = '\0';
+    
+    if (size)
+        *size = file_size;
 
     fclose(file);
 }
 
 
-static void read_stdin(char **encrypt)
+static void read_stdin(char **encrypt, size_t* size)
 {
     size_t buffer_size = 1024;
     size_t total_size = 0;
@@ -113,6 +116,8 @@ static void read_stdin(char **encrypt)
     buffer[total_size] = '\0';
 
     *encrypt = buffer;
+    if (size)
+        *size = total_size;
 }
 
 static algorithms check_algorithm(const char *algorithm)
@@ -181,15 +186,142 @@ void check_flag(algorithms algo, int flag, char flag_name)
     print_usage(NONE, EXIT_FAILURE);
 }
 
+bool is_valid_hex_key(const char* key)
+{
+    if (strlen(key) != 16)
+    {
+        fprintf(stderr, "Invalid key length. Key must be 16 hexadecimal characters.\n");
+        exit(1);
+        return false;
+    }
+
+    for (int i = 0; i < 16; i++)
+    {
+        if (!isxdigit(key[i]))
+        {
+            fprintf(stderr, "Invalid character detected. Key must contain only hexadecimal characters (0-9, a-f, A-F).\n");
+            exit(1);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool is_valid_hex_iv(const char* iv)
+{
+    if (strlen(iv) != 16)
+    {
+        fprintf(stderr, "Invalid IV length. IV must be 16 hexadecimal characters.\n");
+        exit(1);
+        return false;
+    }
+
+    for (int i = 0; i < 16; i++)
+    {
+        if (!isxdigit(iv[i]))
+        {
+            fprintf(stderr, "Invalid character detected. IV must contain only hexadecimal characters (0-9, a-f, A-F).\n");
+            exit(1);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+bool is_valid_hex_salt(const char* salt)
+{
+    if (strlen(salt) != 8)
+    {
+        fprintf(stderr, "Invalid salt length. Salt must be 8 hexadecimal characters.\n");
+        exit(1);
+        return false;
+    }
+
+    for (int i = 0; i < 8; i++)
+    {
+        if (!isxdigit(salt[i]))
+        {
+            fprintf(stderr, "Invalid character detected. Salt must contain only hexadecimal characters (0-9, a-f, A-F).\n");
+            exit(1);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void do_flag_s(algorithms algo, list_t** list, char* optarg)
+{
+    if (optarg == NULL)
+    {
+        fprintf(stderr, "ft_ssl: Error: -s flag requires an argument.\n");
+        exit(1);
+    }
+
+    switch (algo)
+    {
+        case MD5:
+        case SHA256:
+        case WHIRLPOOL:
+        case BLAKE2S:
+            if (optarg)
+            {
+                list_add_last(list, optarg, optarg, TYPE_NORMAL, strlen(optarg));
+            }
+            else
+            {
+                fprintf(stderr, "Option -s contains garbage as argument: %s.\n", optarg);
+                fprintf(stderr, "This will become fatal error in the future.\n");
+            }
+            break;
+        case BASE64:
+            if (optarg)
+            {
+                list_add_last(list, optarg, optarg, TYPE_NORMAL, strlen(optarg));
+            }
+            else
+            {
+                fprintf(stderr, "Option -s contains garbage as argument: %s.\n", optarg);
+                fprintf(stderr, "This will become fatal error in the future.\n");
+            }
+            break;
+        case DES:
+        case DES_ECB:
+        case DES_CBC:
+        case DES_OFB:
+        case DES3:
+        case DES3_ECB:
+        case DES3_CBC:
+        case DES3_OFB:
+            if (optarg && is_valid_hex_salt(optarg))
+            {
+                list_add_last(list, optarg, optarg, TYPE_SALT, strlen(optarg));
+            }
+            else
+            {
+                fprintf(stderr, "Fatal error checking salt.\n");
+                exit(1);
+            }
+            break;
+        default:
+            ft_assert(0, "Invalid algorithm.");
+            break;
+    }
+}
+
 void parse_args(int argc, char *argv[], int *flags, void** encrypt, algorithms* algorithm)
 {
     int opt;
     char* stdin_buffer = NULL;
     list_t **list = (list_t **)encrypt;
+    size_t size = 0;
 
     *algorithm = check_algorithm(argv[1]);
 
-    while ((opt = getopt(argc, argv, "?hpqrs:edi:o:")) != -1)
+    while ((opt = getopt(argc, argv, "?hpqrs:edi:o:ak:v:")) != -1)
     {
         switch (opt)
         {
@@ -210,16 +342,9 @@ void parse_args(int argc, char *argv[], int *flags, void** encrypt, algorithms* 
                 *flags |= R_FLAG;
                 break;
             case 's':
+            /* TODO cannot save it into list, rarete.... */
                 check_flag(*algorithm, S_FLAG, 's');
-                if (optarg)
-                {
-                    list_add_last(list, optarg, optarg, TYPE_NORMAL);
-                }
-                else
-                {
-                    fprintf(stderr, "Option -l contains garbage as argument: %s.\n", optarg);
-                    fprintf(stderr, "This will become fatal error in the future.\n");
-                }
+                do_flag_s(*algorithm, list, optarg);
                 break;
             case 'e':
                 check_flag(*algorithm, E_FLAG, 'e');
@@ -245,8 +370,8 @@ void parse_args(int argc, char *argv[], int *flags, void** encrypt, algorithms* 
                 check_flag(*algorithm, I_FLAG, 'i');
                 if (optarg)
                 {
-                    read_file(optarg, &stdin_buffer);
-                    list_add_last(list, stdin_buffer, optarg, TYPE_FILE);
+                    read_file(optarg, &stdin_buffer, &size);
+                    list_add_last(list, stdin_buffer, optarg, TYPE_FILE, size);
                     free(stdin_buffer);
                     stdin_buffer = NULL;
                 }
@@ -257,15 +382,43 @@ void parse_args(int argc, char *argv[], int *flags, void** encrypt, algorithms* 
                 }
                 break;
             case 'o':
-            /*notok*/
+            /* TODO notok*/
                 check_flag(*algorithm, O_FLAG, 'o');
                 if (optarg)
                 {
-                    list_add_last(list, optarg, optarg, TYPE_NORMAL);
+                    list_add_last(list, optarg, optarg, TYPE_NORMAL, strlen(optarg));
                 }
                 else
                 {
                     fprintf(stderr, "Option -o contains garbage as argument: %s.\n", optarg);
+                    fprintf(stderr, "This will become fatal error in the future.\n");
+                }
+                break;
+            case 'a':
+                check_flag(*algorithm, A_FLAG, 'a');
+                *flags |= A_FLAG;
+                break;
+            case 'k': /* TODO cannot save it into list, rarete.... */
+                check_flag(*algorithm, K_FLAG, 'k');
+                if (optarg && is_valid_hex_key(optarg))
+                {
+                    list_add_last(list, optarg, optarg, TYPE_KEY, strlen(optarg));
+                }
+                else
+                {
+                    fprintf(stderr, "Option -k contains garbage as argument: %s.\n", optarg);
+                    fprintf(stderr, "This will become fatal error in the future.\n");
+                }
+                break;
+            case 'v': /* TODO cannot save it into list, rarete.... */
+                check_flag(*algorithm, V_FLAG, 'v');
+                if (optarg && is_valid_hex_iv(optarg))
+                {
+                    list_add_last(list, optarg, optarg, TYPE_NORMAL, strlen(optarg));
+                }
+                else
+                {
+                    fprintf(stderr, "Option -v contains garbage as argument: %s.\n", optarg);
                     fprintf(stderr, "This will become fatal error in the future.\n");
                 }
                 break;
@@ -285,10 +438,10 @@ void parse_args(int argc, char *argv[], int *flags, void** encrypt, algorithms* 
             exit(1);
         }
 
-        read_file(argv[i], &stdin_buffer);
+        read_file(argv[i], &stdin_buffer, &size);
         if (stdin_buffer)
         {
-            list_add_last(list, stdin_buffer, argv[i], TYPE_FILE);
+            list_add_last(list, stdin_buffer, argv[i], TYPE_FILE, size);
             free(stdin_buffer);
             stdin_buffer = NULL;
         }
@@ -303,16 +456,24 @@ void parse_args(int argc, char *argv[], int *flags, void** encrypt, algorithms* 
 
     /* chekc if something to read from stdin. */
     if (!isatty(fileno(stdin)) && (*flags & P_FLAG || *list == NULL)) {
-        read_stdin(&stdin_buffer);
-        list_add_last(list, stdin_buffer, (*flags & P_FLAG) ? stdin_buffer : "stdin", (*flags & P_FLAG) ? TYPE_STDIN_NORMAL : TYPE_STDIN);
+        read_stdin(&stdin_buffer, &size);
+        
+        list_add_last(list, stdin_buffer,\
+        (*flags & P_FLAG) ? stdin_buffer : "stdin", (*flags & P_FLAG) ? TYPE_STDIN_NORMAL : TYPE_STDIN,\
+        size);
+
         free(stdin_buffer);
     }
 
     /* no input recieved, so we read from stdin. */
     if ((*list == NULL))
     {
-        read_stdin(&stdin_buffer);
-        list_add_last(list, stdin_buffer, (*flags & P_FLAG) ? stdin_buffer : "stdin", (*flags & P_FLAG) ? TYPE_STDIN_NORMAL : TYPE_STDIN);
+        read_stdin(&stdin_buffer, &size);
+        
+        list_add_last(list, stdin_buffer,\
+        (*flags & P_FLAG) ? stdin_buffer : "stdin", (*flags & P_FLAG) ? TYPE_STDIN_NORMAL : TYPE_STDIN\
+        , size);
+
         free(stdin_buffer);
     }
 }

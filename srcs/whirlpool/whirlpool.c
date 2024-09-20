@@ -316,12 +316,12 @@ void rhash_whirlpool_final(whirlpool_ctx* ctx, unsigned char* result)
 	be64_copy(result, 0, ctx->hash, 64);
 }
 
-void whirlpool_main(const char *data, char* procedence, int type, int flags)
+void whirlpool_main(const char *data, char* procedence, input_type type, int flags, size_t size)
 {    
     whirlpool_ctx ctx;
     rhash_whirlpool_init(&ctx);
     
-    rhash_whirlpool_update(&ctx, (const unsigned char *)data, strlen(data));
+    rhash_whirlpool_update(&ctx, (const unsigned char *)data, size);
     
     unsigned char result[64];
     rhash_whirlpool_final(&ctx, result);
@@ -347,6 +347,8 @@ void whirlpool_main(const char *data, char* procedence, int type, int flags)
             case TYPE_STDIN_NORMAL:
                 /* handled outside */
                 break;
+			default:
+				break;
         }
     }
 
@@ -386,7 +388,9 @@ void whirlpool_main(const char *data, char* procedence, int type, int flags)
             case TYPE_STDIN_NORMAL:
                 /* handled outside */
                 break;
-        }
+			default:
+				break;
+		}
     }
 
     printf("\n");

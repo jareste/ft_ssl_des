@@ -8,6 +8,7 @@
 #include <whirlpool.h>
 #include <blake2s.h>
 #include <base64.h>
+#include <ft_algorithm_g.h>
 
 #include <stdio.h>
 
@@ -20,27 +21,28 @@ void exec_algorithm(void *encrypt, int flags, algorithms algorithm)
 
     while (list)
     {
-        switch (algorithm)
-        {
-        case MD5:
-            md5_main(get_data(list), get_procedence(list), get_type(list), flags);
-            break;
-        case SHA256:
-            sha256_main(get_data(list), get_procedence(list), get_type(list), flags);
-            break;
-        case WHIRLPOOL:
-            whirlpool_main(get_data(list), get_procedence(list), get_type(list), flags);
-            break;
-        case BLAKE2S:
-            blake2s_main(get_data(list), get_procedence(list), get_type(list), flags);
-            break;
-        case BASE64:
-            base64_main(get_data(list), get_procedence(list), get_type(list), flags);
-            break;
-        default:
-            ft_assert(0, "Fatal error: Unknown algorithm.");
-            break;
-        }
+        g_algorithms[algorithm].func(get_data(list), get_procedence(list), get_type(list), flags, get_size(list));
+        // switch (algorithm)
+        // {
+        // case MD5:
+        //     md5_main(get_data(list), get_procedence(list), get_type(list), flags);
+        //     break;
+        // case SHA256:
+        //     sha256_main(get_data(list), get_procedence(list), get_type(list), flags);
+        //     break;
+        // case WHIRLPOOL:
+        //     whirlpool_main(get_data(list), get_procedence(list), get_type(list), flags);
+        //     break;
+        // case BLAKE2S:
+        //     blake2s_main(get_data(list), get_procedence(list), get_type(list), flags);
+        //     break;
+        // case BASE64:
+        //     base64_main(get_data(list), get_procedence(list), get_type(list), flags);
+        //     break;
+        // default:
+        //     ft_assert(0, "Fatal error: Unknown algorithm.");
+        //     break;
+        // }
         list = list_get_next(list);
     }
 
