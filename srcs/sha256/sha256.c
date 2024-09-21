@@ -125,9 +125,10 @@ static void sha256(const uint8_t *initial_msg, size_t initial_len, uint8_t *dige
     free(msg);
 }
 
-void sha256_main(char* encrypt, char* procedence, input_type type, int flags, size_t size)
+void sha256_main(char* encrypt, void* procedence_void, input_type type, int flags, size_t size)
 {
     uint8_t digest[32];
+    char* procedence = (char*)procedence_void;
     sha256((uint8_t*)encrypt, size, digest);
 
     /**/

@@ -125,10 +125,12 @@ static void md5(const uint8_t *initial_msg, size_t initial_len, uint8_t *digest)
     free(msg);
 }
 
-void md5_main(char *encrypt, char* procedence, input_type type, int flags, size_t size)
+void md5_main(char *encrypt, void* procedence_void, input_type type, int flags, size_t size)
 {
     uint8_t digest[16];
+    char* procedence = (char*)procedence_void;
     md5((uint8_t*)encrypt, size, digest);
+
 
     /**/
     if (!(flags & Q_FLAG) && !(flags & R_FLAG))

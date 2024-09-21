@@ -2,7 +2,7 @@
 #define ALGORITHMS_H
 #include <ft_ssl.h>
 
-typedef void (*algorithm_func)(char *encrypt, char *procedence, input_type type, int flags, size_t size);
+typedef void (*algorithm_func)(char *encrypt, void *procedence, input_type type, int flags, size_t size);
 
 typedef struct
 {

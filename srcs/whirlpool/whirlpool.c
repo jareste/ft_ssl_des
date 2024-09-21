@@ -316,9 +316,10 @@ void rhash_whirlpool_final(whirlpool_ctx* ctx, unsigned char* result)
 	be64_copy(result, 0, ctx->hash, 64);
 }
 
-void whirlpool_main(const char *data, char* procedence, input_type type, int flags, size_t size)
+void whirlpool_main(const char *data, void* procedence_void, input_type type, int flags, size_t size)
 {    
     whirlpool_ctx ctx;
+    char* procedence = (char*)procedence_void;
     rhash_whirlpool_init(&ctx);
     
     rhash_whirlpool_update(&ctx, (const unsigned char *)data, size);

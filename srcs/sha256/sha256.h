@@ -4,6 +4,6 @@
 #include <stdint.h>
 #include <ft_ssl.h>
 
-void sha256_main(char *encrypt, char* procedence, input_type type, int flags, size_t size);
+void sha256_main(char *encrypt, void* procedence, input_type type, int flags, size_t size);
 
 #endif

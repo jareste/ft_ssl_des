@@ -160,9 +160,10 @@ static void blake2s_final(blake2s_ctx *ctx, void *out)
     }
 }
 
-void blake2s_main(char *encrypt, char* procedence, input_type type, int flags, size_t size)
+void blake2s_main(char *encrypt, void* procedence_void, input_type type, int flags, size_t size)
 {
     blake2s_ctx ctx;
+    char* procedence = (char*)procedence_void;
     uint8_t hash[BLAKE2S_OUT_SIZE];
 
     blake2s_init(&ctx, BLAKE2S_OUT_SIZE);
