@@ -87,7 +87,7 @@ static void read_file(const char *filename, char **content, size_t *size)
     }
 
     (*content)[file_size] = '\0';
-    
+
     if (size)
         *size = file_size;
 

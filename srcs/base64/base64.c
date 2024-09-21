@@ -18,36 +18,59 @@ static const unsigned char base64_index[256] = {
     ['4'] = 56, ['5'] = 57, ['6'] = 58, ['7'] = 59, ['8'] = 60, ['9'] = 61, ['+'] = 62, ['/'] = 63
 };
 
-static char* base64_decode(const char* input)
+static char* base64_decode(const uint8_t* input, size_t size, size_t* out_size)
 {
-    int len = strlen(input);
-    int pad = (input[len - 1] == '=' ? (input[len - 2] == '=' ? 2 : 1) : 0);
-    int output_len = (len * 3) / 4 - pad;
-    char* output = (char*)malloc(output_len + 1);
+    size_t i, j;
+    uint8_t* clean_input = (uint8_t*)malloc(size);
 
-    int i, j;
-    for (i = 0, j = 0; i < len;)
+    size_t clean_len = 0;
+    for (i = 0; i < size; i++)
     {
-        u_int32_t sextet_a = input[i] == '=' ? 0 & i++ : base64_index[(unsigned char)input[i++]];
-        u_int32_t sextet_b = input[i] == '=' ? 0 & i++ : base64_index[(unsigned char)input[i++]];
-        u_int32_t sextet_c = input[i] == '=' ? 0 & i++ : base64_index[(unsigned char)input[i++]];
-        u_int32_t sextet_d = input[i] == '=' ? 0 & i++ : base64_index[(unsigned char)input[i++]];
-
-        u_int32_t triple = (sextet_a << 18) | (sextet_b << 12) | (sextet_c << 6) | sextet_d;
-
-        if (j < output_len) output[j++] = (triple >> 16) & 0xFF;
-        if (j < output_len) output[j++] = (triple >> 8) & 0xFF;
-        if (j < output_len) output[j++] = triple & 0xFF;
+        if (input[i] != '\n' && input[i] != '\r' && input[i] != ' ' && input[i] != '\t')
+        {
+            clean_input[clean_len++] = input[i];
+        }
     }
 
-    output[output_len] = '\0';
+    size_t padding = 0;
+    for (i = clean_len; i > 0; i--)
+    {
+        if (clean_input[i - 1] == '=')
+        {
+            padding++;
+        }
+        else
+        {
+            break;
+        }
+    }
+    clean_len -= padding;
 
-    return output;
+    *out_size = (clean_len * 3) / 4;
+
+    char* decoded = (char*)malloc(*out_size);
+    
+    for (i = 0, j = 0; i < clean_len;)
+    {
+        uint32_t sextet_a = base64_index[clean_input[i++]];
+        uint32_t sextet_b = base64_index[clean_input[i++]];
+        uint32_t sextet_c = (i < clean_len) ? base64_index[clean_input[i++]] : 0;
+        uint32_t sextet_d = (i < clean_len) ? base64_index[clean_input[i++]] : 0;
+
+        uint32_t triple = (sextet_a << 18) | (sextet_b << 12) | (sextet_c << 6) | sextet_d;
+
+        if (j < *out_size) decoded[j++] = (triple >> 16) & 0xFF;
+        if (j < *out_size) decoded[j++] = (triple >> 8) & 0xFF;
+        if (j < *out_size) decoded[j++] = triple & 0xFF;
+    }
+
+    free(clean_input);
+    return decoded;
 }
 
-static char* base64_encode(const char* input)
+static char* base64_encode(const uint8_t* input, size_t size, size_t* out_size)
 {
-    int len = strlen(input);
+    int len = size;
     int pad = (3 - len % 3) % 3;
     int output_len = 4 * ((len + 2) / 3);
     char* output = (char*)malloc(output_len + 1);
@@ -74,28 +97,57 @@ static char* base64_encode(const char* input)
     
     output[output_len] = '\0';
 
+    if (out_size)
+    {
+        *out_size = output_len;
+    }
+
     return output;
+}
+
+void print_base64_output_enc(const char *output)
+{
+    int len = strlen(output);
+    int i;
+
+    for (i = 0; i < len; i++)
+    {
+        putchar(output[i]);
+        if ((i + 1) % 64 == 0)
+        {
+            putchar('\n');
+        }
+    }
+    if (len % 64 != 0)
+    {
+        putchar('\n');
+    }
+}
+
+void print_base64_output_dec(const char *output, size_t size)
+{
+    fwrite(output, 1, size, stdout);
 }
 
 void base64_main(char *encrypt, char* procedence, input_type type, int flags, size_t size)
 {
     char* output = NULL;
+    size_t out_size = 0;
 
     UNUSED_PARAM(procedence);
     UNUSED_PARAM(type);
-    UNUSED_PARAM(size);
 
     if (flags & D_FLAG)
     {
-        output = base64_decode(encrypt);
+        output = base64_decode((uint8_t*)encrypt, size, &out_size);
+        print_base64_output_dec(output, out_size);
     }
     else
     {
-        output = base64_encode(encrypt);
+        output = base64_encode((uint8_t*)encrypt, size, &out_size);
+        print_base64_output_enc(output);
+
     }
 
-    /* Print digest */
-    print_without_newline(output);
-
-    printf("\n");
+    free(output);
 }
